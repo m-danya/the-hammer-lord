@@ -1,6 +1,6 @@
 import pygame
 
-from .settings import *
+from the_hammer_lord.settings import *
 
 
 class Player:
@@ -9,12 +9,10 @@ class Player:
             PLAYER_SPRITE_WIDTH * SCALE_RATIO,
             PLAYER_SPRITE_HEIGHT * SCALE_RATIO,
         )
-        self.x = (
-            SCREEN_SIZE[0] - self.scaled_size[0]
-        ) / 2 + PLAYER_SHIFT_FROM_CENTER_X
-        self.y = (
-            SCREEN_SIZE[1] - self.scaled_size[1]
-        ) / 2 + PLAYER_SHIFT_FROM_CENTER_Y
+        # center coords
+        self.x = SCREEN_SIZE[0] // 2 + PLAYER_SHIFT_FROM_CENTER_X
+        self.y = SCREEN_SIZE[1] // 2 + PLAYER_SHIFT_FROM_CENTER_Y
+
         self.animations_length = {PlayerAction.IDLE: 3}
         self.images = self.load_images()
         self.action = PlayerAction.IDLE
@@ -25,19 +23,30 @@ class Player:
 
     def main(self, display: pygame.Surface, joystick_motion):
         self.move(joystick_motion)
-        display.blit(
-            self.image,
-            camera.get_object_coords(self.x, self.y),
-        )
-        animation_cooldown = 350
-        # update image
-        self.image = self.images[self.action][self.frame_index]
+        self.render(display)
+        self.animation_step()
+
+    def animation_step(self):
         # check if enough time has passed since the last update
-        if pygame.time.get_ticks() - self.update_time > animation_cooldown:
+        if (
+            pygame.time.get_ticks() - self.update_time
+            > PLAYER_ANIMATION_COOLDOWN
+        ):
             self.frame_index += 1
             if self.frame_index >= self.animations_length[self.action]:
                 self.frame_index = 0
             self.update_time = pygame.time.get_ticks()
+            # update image
+            self.image = self.images[self.action][self.frame_index]
+
+    def render(self, display):
+        display.blit(
+            self.image,
+            camera.get_object_coords(
+                self.x - self.scaled_size[0] // 2,
+                self.y - self.scaled_size[1] // 2,
+            ),
+        )
 
     def move(self, joystick_motion):
         self.x += joystick_motion[0] * CAMERA_SPEED

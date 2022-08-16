@@ -4,16 +4,17 @@ import pygame
 from pathlib import Path
 import logging
 
-from .settings import *
+from the_hammer_lord.persons.enemy import BaseEnemy
+from the_hammer_lord.settings import *
 
-from .player import Player
-from .camera import (
+from the_hammer_lord.persons.player import Player
+from the_hammer_lord.camera import (
     Camera,
     get_scaled_size,
     scale_pixel_image,
 )
 
-from .settings import camera
+from the_hammer_lord.settings import camera
 
 
 def main():
@@ -32,7 +33,7 @@ def main():
     # prepare to draw
     pygame.init()
     pygame.display.set_caption("The Hammer Lord")
-    screen = pygame.display.set_mode(SCREEN_SIZE)
+    screen = pygame.display.set_mode(SCREEN_SIZE, vsync=True)
     frame_cap = 1.0 / 120
     time_1 = time.perf_counter()
     unprocessed = 0
@@ -40,6 +41,11 @@ def main():
     # clock = pygame.time.Clock() <- an alternative to perf_counter
 
     player = Player()
+
+    enemies = [
+        BaseEnemy(500, 1000, target_for_chasing=player),
+        BaseEnemy(800, 1500, target_for_chasing=player),
+    ]
 
     # some graphic objects
     # (they will be removed when the level system will be implemented)
@@ -103,5 +109,6 @@ def main():
             # draw properly implemented objects
             camera.main(joystick_motion=joystick_motion)
             player.main(display=screen, joystick_motion=joystick_motion)
-
+            for enemy in enemies:
+                enemy.main(display=screen)
             pygame.display.flip()

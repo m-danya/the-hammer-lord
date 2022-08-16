@@ -1,6 +1,6 @@
 import pygame
 
-from .settings import *
+from the_hammer_lord.settings import *
 
 
 class Camera:
