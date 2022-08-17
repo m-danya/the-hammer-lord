@@ -15,6 +15,12 @@ ENEMY_TEST_RECT_SIZE = 100, 150
 ENEMY_SPEED = 2
 
 
+ENEMY_HEALTH = 100
+PLAYER_HEALTH = 300
+
+HEALTH_BAR_THICKNESS = 3
+
+
 class PlayerAction(enum.Enum):
     IDLE = enum.auto()
 
@@ -23,6 +29,10 @@ SPRITE_PATHS = {
     PlayerAction.IDLE: Path(__file__).parent / "assets/images/main_idle.png"
 }
 
-from the_hammer_lord.camera import Camera
+from the_hammer_lord.utils.objects_storage import ObjectsStorage
+
+objectsStorage = ObjectsStorage()
+
+from the_hammer_lord.utils.camera import Camera
 
 camera = Camera(0, 0)

@@ -1,14 +1,13 @@
 import pygame
 
 from the_hammer_lord.settings import *
+from the_hammer_lord.ui.health_bar import HealthBar
 
 
 class Player:
     def __init__(self):
-        self.scaled_size = (
-            PLAYER_SPRITE_WIDTH * SCALE_RATIO,
-            PLAYER_SPRITE_HEIGHT * SCALE_RATIO,
-        )
+        self.width = PLAYER_SPRITE_WIDTH * SCALE_RATIO
+        self.height = PLAYER_SPRITE_HEIGHT * SCALE_RATIO
         # center coords
         self.x = SCREEN_SIZE[0] // 2 + PLAYER_SHIFT_FROM_CENTER_X
         self.y = SCREEN_SIZE[1] // 2 + PLAYER_SHIFT_FROM_CENTER_Y
@@ -18,6 +17,8 @@ class Player:
         self.action = PlayerAction.IDLE
         self.frame_index = 0
         self.image = self.images[self.action][self.frame_index]
+
+        self.health_bar = HealthBar(PLAYER_HEALTH)
 
         self.update_time = pygame.time.get_ticks()
 
@@ -40,17 +41,28 @@ class Player:
             self.image = self.images[self.action][self.frame_index]
 
     def render(self, display):
+        # sprite
         display.blit(
             self.image,
             camera.get_object_coords(
-                self.x - self.scaled_size[0] // 2,
-                self.y - self.scaled_size[1] // 2,
+                self.x - self.width // 2,
+                self.y - self.height // 2,
             ),
         )
 
+        # heath bar
+        self.health_bar.render(
+            display,
+            self.x - 15,
+            self.y - self.height // 2 + 15,
+        )
+
     def move(self, joystick_motion):
-        self.x += joystick_motion[0] * CAMERA_SPEED
-        self.y += joystick_motion[1] * CAMERA_SPEED
+        dx = joystick_motion[0] * CAMERA_SPEED
+        dy = joystick_motion[1] * CAMERA_SPEED
+        if objectsStorage.can_move(self, dx, dy):
+            self.x += dx
+            self.y += dy
 
     def load_images(self):
 
@@ -73,7 +85,7 @@ class Player:
                 temp_img_list.append(
                     pygame.transform.scale(
                         temp_img,
-                        self.scaled_size,
+                        (self.width, self.height),
                     )
                 )
             animation_list[action] = temp_img_list

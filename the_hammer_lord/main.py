@@ -1,20 +1,20 @@
 import sys
 import time
+from itertools import chain
+
 import pygame
-from pathlib import Path
 import logging
 
 from the_hammer_lord.persons.enemy import BaseEnemy
 from the_hammer_lord.settings import *
 
 from the_hammer_lord.persons.player import Player
-from the_hammer_lord.camera import (
-    Camera,
+from the_hammer_lord.utils.camera import (
     get_scaled_size,
     scale_pixel_image,
 )
 
-from the_hammer_lord.settings import camera
+from the_hammer_lord.settings import camera, ObjectsStorage
 
 
 def main():
@@ -41,11 +41,14 @@ def main():
     # clock = pygame.time.Clock() <- an alternative to perf_counter
 
     player = Player()
+    camera.introduce_player(player)
 
     enemies = [
         BaseEnemy(500, 1000, target_for_chasing=player),
         BaseEnemy(800, 1500, target_for_chasing=player),
     ]
+
+    objectsStorage.extend(chain((player,), enemies))
 
     # some graphic objects
     # (they will be removed when the level system will be implemented)

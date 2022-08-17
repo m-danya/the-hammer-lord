@@ -1,6 +1,7 @@
 import pygame
 import math
 from the_hammer_lord.settings import *
+from the_hammer_lord.ui.health_bar import HealthBar
 
 
 class BaseEnemy:
@@ -9,6 +10,11 @@ class BaseEnemy:
         self.x = x
         self.y = y
         self.target_for_chasing = target_for_chasing
+        self.width = ENEMY_TEST_RECT_SIZE[0]
+        self.height = ENEMY_TEST_RECT_SIZE[1]
+
+        self.health_bar = HealthBar(ENEMY_HEALTH)
+        self.health_bar.value //= 2
 
     def main(self, display: pygame.Surface):
         self.move()
@@ -16,18 +22,20 @@ class BaseEnemy:
 
     def move(self):
         # check whether the enemy sees a player
-        dx = self.target_for_chasing.x - self.x
-        dy = self.target_for_chasing.y - self.y
-        distance = math.hypot(dx, dy)
+        x_dist = self.target_for_chasing.x - self.x
+        y_dist = self.target_for_chasing.y - self.y
+        dx = math.copysign(ENEMY_SPEED, x_dist)
+        dy = math.copysign(ENEMY_SPEED, y_dist)
+        distance = math.hypot(x_dist, y_dist)
         # TODO: change logic to avoid collision with any
         #  character in the game
         #  (instead of 200 < distance).
         #  smth like every character will call
         #  can_move_here(..) before actually moving
-        if 200 < distance < 500:
+        if distance < 500 and objectsStorage.can_move(self, dx, dy):
             # move toward the chasing target
-            self.x += math.copysign(ENEMY_SPEED, dx)
-            self.y += math.copysign(ENEMY_SPEED, dy)
+            self.x += dx
+            self.y += dy
 
     def render(self, display: pygame.Surface):
         # enemy is a composition of 2 rectangles for now
@@ -53,4 +61,8 @@ class BaseEnemy:
                 ENEMY_TEST_RECT_SIZE[0] // 2,
                 ENEMY_TEST_RECT_SIZE[0] // 2,
             ),
+        )
+
+        self.health_bar.render(
+            display, self.x, self.y - ENEMY_TEST_RECT_SIZE[1] // 2 - 30
         )
