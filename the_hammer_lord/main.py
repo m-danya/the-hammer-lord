@@ -8,27 +8,33 @@ import logging
 from the_hammer_lord.persons.enemy import BaseEnemy
 from the_hammer_lord.settings import *
 
+from the_hammer_lord.controls.joystick import JoystickControls
+from the_hammer_lord.controls.keyboard import KeyboardControls
+
 from the_hammer_lord.persons.player import Player
 from the_hammer_lord.utils.camera import (
     get_scaled_size,
     scale_pixel_image,
 )
 
-from the_hammer_lord.settings import camera, ObjectsStorage
+from the_hammer_lord.settings import camera
+
+
+def exit_game():
+    pygame.quit()
+    sys.exit()
 
 
 def main():
-    # prepare a joystick
-    joystick_motion = [0, 0]
+    # TODO: encapsulate in Player class
+    move_controls = KeyboardControls()
+    # prepare joystick input if available
     try:
         pygame.joystick.init()
-        joystick = pygame.joystick.Joystick(0)
+        pygame.joystick.Joystick(0)
+        move_controls = JoystickControls()
     except pygame.error:
-        logging.error(
-            "Insert a controller to play this game, there is no keyboard"
-            " support for now :("
-        )
-        exit(1)
+        logging.error("No controller detected, falling back to keyboard insert")
 
     # prepare to draw
     pygame.init()
@@ -76,19 +82,18 @@ def main():
             can_render = True
         if can_render:
             for event in pygame.event.get():
-                if event.type == pygame.JOYAXISMOTION:
-                    if event.axis < 2:
-                        joystick_motion[event.axis] = event.value
-                        if abs(joystick_motion[0]) < 0.1:
-                            joystick_motion[0] = 0
-                        if abs(joystick_motion[1]) < 0.1:
-                            joystick_motion[1] = 0
-                if event.type == pygame.QUIT or (
-                    event.type == pygame.KEYDOWN
-                    and event.key == pygame.K_ESCAPE
-                ):
-                    pygame.quit()
-                    sys.exit()
+                match event.type:
+                    case pygame.JOYAXISMOTION:
+                        move_controls.handle_movement(event.axis, event.value)
+                    case pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            exit_game()
+
+                        move_controls.handle_movement(event.key)
+                    case pygame.KEYUP:
+                        move_controls.handle_movement(event.key, key_up=True)
+                    case pygame.QUIT:
+                        exit_game()
 
             screen.fill("grey")
 
@@ -110,8 +115,11 @@ def main():
             screen.blit(k_img, k_rect)
 
             # draw properly implemented objects
-            camera.main(joystick_motion=joystick_motion)
-            player.main(display=screen, joystick_motion=joystick_motion)
+            camera.main(joystick_motion=move_controls.motion_vector)
+            player.main(display=screen, joystick_motion=move_controls.motion_vector)
+
+            # enemy rendering
             for enemy in enemies:
                 enemy.main(display=screen)
+
             pygame.display.flip()
