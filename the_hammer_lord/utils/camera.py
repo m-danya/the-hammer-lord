@@ -1,29 +1,48 @@
+from __future__ import annotations
+
 import pygame
+import typing as tp
+
+from the_hammer_lord.types.movement import Vector2D
 
 from the_hammer_lord.settings import *
 
+# prevent cycle imports
+if tp.TYPE_CHECKING:
+    from the_hammer_lord.entities.player import Player
+
 
 class Camera:
-    def __init__(self, x, y):
+    x: float
+    y: float
+    player: tp.Optional[Player] = None
+
+    def __init__(self, x: float, y: float):
         self.x = x
         self.y = y
-        self.player = None
 
-    def main(self, joystick_motion):
-        self.move(joystick_motion)
+    def main(self, motion_vector: Vector2D):
+        self.move(motion_vector)
 
-    def move(self, joystick_motion):
-        dx = joystick_motion[0] * CAMERA_SPEED
-        dy = joystick_motion[1] * CAMERA_SPEED
-        if self.player and objectsStorage.can_move(self.player, dx, dy):
-            self.x += dx
-            self.y += dy
+    def move(self, motion_vector: Vector2D):
+        # if player is bound, camera follows it
+        if self.player:
+            self.x, self.y = self.player.camera_adjusted_coords
+            return
 
-    def get_object_coords(self, x, y):
+        # otherwise it moves independently of player
+        # e.g. for cutscenes
+        self.x += motion_vector[0] * CAMERA_SPEED
+        self.y += motion_vector[1] * CAMERA_SPEED
+
+    def get_object_coords(self, x: float, y: float) -> Vector2D:
         return x - self.x, y - self.y
 
-    def introduce_player(self, player):
+    def bind_player(self, player: Player):
         self.player = player
+
+    def unbind_player(self):
+        self.player = None
 
 
 def get_scaled_size(size: tuple[int, int]):

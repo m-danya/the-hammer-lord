@@ -1,6 +1,7 @@
 import pygame
 
 from the_hammer_lord.settings import *
+from the_hammer_lord.global_ctx import camera
 
 
 class HealthBar:

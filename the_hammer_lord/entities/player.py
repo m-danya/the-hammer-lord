@@ -1,16 +1,20 @@
 import pygame
 
+from the_hammer_lord.types.movement import Vector2D
+from .object import GameObject
+
 from the_hammer_lord.settings import *
 from the_hammer_lord.ui.health_bar import HealthBar
+from the_hammer_lord.global_ctx import camera, collidablesStorage
 
 
-class Player:
+class Player(GameObject):
     def __init__(self):
         self.width = PLAYER_SPRITE_WIDTH * SCALE_RATIO
         self.height = PLAYER_SPRITE_HEIGHT * SCALE_RATIO
         # center coords
-        self.x = SCREEN_SIZE[0] // 2 + PLAYER_SHIFT_FROM_CENTER_X
-        self.y = SCREEN_SIZE[1] // 2 + PLAYER_SHIFT_FROM_CENTER_Y
+        self.x = PLAYER_COORDS_CENTERED[0]
+        self.y = PLAYER_COORDS_CENTERED[1]
 
         self.animations_length = {PlayerAction.IDLE: 3}
         self.images = self.load_images()
@@ -22,8 +26,12 @@ class Player:
 
         self.update_time = pygame.time.get_ticks()
 
-    def main(self, display: pygame.Surface, joystick_motion):
-        self.move(joystick_motion)
+    @property
+    def camera_adjusted_coords(self) -> Vector2D:
+        return self.x - PLAYER_COORDS_CENTERED[0], self.y - PLAYER_COORDS_CENTERED[1]
+
+    def main(self, display: pygame.Surface, motion_vector: Vector2D):
+        self.move(motion_vector)
         self.render(display)
         self.animation_step()
 
@@ -57,15 +65,14 @@ class Player:
             self.y - self.height // 2 + 15,
         )
 
-    def move(self, joystick_motion):
-        dx = joystick_motion[0] * CAMERA_SPEED
-        dy = joystick_motion[1] * CAMERA_SPEED
-        if objectsStorage.can_move(self, dx, dy):
+    def move(self, motion_vector: Vector2D):
+        dx = motion_vector[0] * CAMERA_SPEED
+        dy = motion_vector[1] * CAMERA_SPEED
+        if collidablesStorage.can_move(self, dx, dy):
             self.x += dx
             self.y += dy
 
     def load_images(self):
-
         animation_list = {}
 
         for action in PlayerAction:

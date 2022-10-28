@@ -16,6 +16,7 @@ class KeyboardControls(Controls):
             case pygame.K_SPACE:
                 # confirm the character is standing on the ground
                 if not self._jumping:
+                    self._jumping = True
                     self.motion_vector[1] = -0.5
 
     def handle_movement(self, *args, **kwargs):

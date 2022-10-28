@@ -5,19 +5,20 @@ from itertools import chain
 import pygame
 import logging
 
-from the_hammer_lord.persons.enemy import BaseEnemy
 from the_hammer_lord.settings import *
 
 from the_hammer_lord.controls.joystick import JoystickControls
 from the_hammer_lord.controls.keyboard import KeyboardControls
 
-from the_hammer_lord.persons.player import Player
+from the_hammer_lord.entities.enemy import BaseEnemy
+from the_hammer_lord.entities.player import Player
+
 from the_hammer_lord.utils.camera import (
     get_scaled_size,
     scale_pixel_image,
 )
 
-from the_hammer_lord.settings import camera
+from the_hammer_lord.global_ctx import camera, collidablesStorage
 
 
 def exit_game():
@@ -47,14 +48,14 @@ def main():
     # clock = pygame.time.Clock() <- an alternative to perf_counter
 
     player = Player()
-    camera.introduce_player(player)
+    camera.bind_player(player)
 
     enemies = [
         BaseEnemy(500, 1000, target_for_chasing=player),
         BaseEnemy(800, 1500, target_for_chasing=player),
     ]
 
-    objectsStorage.extend(chain((player,), enemies))
+    collidablesStorage.extend(chain((player,), enemies))
 
     # some graphic objects
     # (they will be removed when the level system will be implemented)
@@ -115,8 +116,9 @@ def main():
             screen.blit(k_img, k_rect)
 
             # draw properly implemented objects
-            camera.main(joystick_motion=move_controls.motion_vector)
-            player.main(display=screen, joystick_motion=move_controls.motion_vector)
+            # as camera follows our player, we're moving it first
+            player.main(display=screen, motion_vector=move_controls.motion_vector)
+            camera.main(motion_vector=move_controls.motion_vector)
 
             # enemy rendering
             for enemy in enemies:
