@@ -58,7 +58,7 @@ class Player(GameObject):
             ),
         )
 
-        # heath bar
+        # health bar
         self.health_bar.render(
             display,
             self.x - 15,
@@ -66,11 +66,19 @@ class Player(GameObject):
         )
 
     def move(self, motion_vector: Vector2D):
+        # FIXME: add appropriate vertical collision tracking
+        if self.y > 1500:
+            self.y = 1500
+            motion_vector[1] = 0
+
         dx = motion_vector[0] * CAMERA_SPEED
         dy = motion_vector[1] * CAMERA_SPEED
+
         if collidablesStorage.can_move(self, dx, dy):
             self.x += dx
             self.y += dy
+        else:
+            motion_vector[1] = 0
 
     def load_images(self):
         animation_list = {}

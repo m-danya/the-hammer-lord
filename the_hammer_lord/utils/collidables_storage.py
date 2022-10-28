@@ -14,6 +14,7 @@ class ObjectBox:
         self.height = obj.height
         self.top_y = obj.y - obj.height // 2
 
+    # TODO: add collision direction check (see MovementDir enum)
     def is_colliding_with(self, other: ObjectBox):
         return pygame.Rect.colliderect(
             pygame.Rect(self.left_x, self.top_y, self.width, self.height),

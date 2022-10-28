@@ -1,6 +1,5 @@
 import sys
 import time
-from itertools import chain
 
 import pygame
 import logging
@@ -55,7 +54,8 @@ def main():
         BaseEnemy(800, 1500, target_for_chasing=player),
     ]
 
-    collidablesStorage.extend(chain((player,), enemies))
+    # as we're moving towards a 2d platformer enemies are not collidable anymore
+    collidablesStorage.extend([player])
 
     # some graphic objects
     # (they will be removed when the level system will be implemented)
@@ -123,5 +123,7 @@ def main():
             # enemy rendering
             for enemy in enemies:
                 enemy.main(display=screen)
+
+            move_controls.apply_gravity()
 
             pygame.display.flip()
