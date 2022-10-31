@@ -1,10 +1,15 @@
 import pygame
 import math
+
+from the_hammer_lord.entities.base import BaseEntity
+
 from the_hammer_lord.settings import *
 from the_hammer_lord.ui.health_bar import HealthBar
 
+from the_hammer_lord.global_ctx import camera, collidablesStorage
 
-class BaseEnemy:
+
+class BaseEnemy(BaseEntity):
     def __init__(self, x, y, target_for_chasing):
         # center coords
         self.x = x
@@ -32,7 +37,7 @@ class BaseEnemy:
         #  (instead of 200 < distance).
         #  smth like every character will call
         #  can_move_here(..) before actually moving
-        if distance < 500 and objectsStorage.can_move(self, dx, dy):
+        if distance < 500 and collidablesStorage.can_move(self, dx, dy):
             # move toward the chasing target
             self.x += dx
             self.y += dy
