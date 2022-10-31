@@ -12,6 +12,8 @@ from the_hammer_lord.global_ctx import camera, collidablesStorage
 
 
 class Player(Sprite):
+    x: int = PLAYER_COORDS_CENTERED[0]
+    y: int = PLAYER_COORDS_CENTERED[1]
     _animations: Dict[PlayerAction, List[Surface]] = {}
     _current_frame: int = 0
     _current_action: PlayerAction = PlayerAction.IDLE
@@ -20,9 +22,6 @@ class Player(Sprite):
 
     def __init__(self):
         super().__init__()
-        # center coords
-        self.x = PLAYER_COORDS_CENTERED[0]
-        self.y = PLAYER_COORDS_CENTERED[1]
 
         # assign associated rectangle
         self.rect = Rect((self.x, self.y), (PLAYER_SPRITE_WIDTH * SCALE_RATIO, PLAYER_SPRITE_HEIGHT * SCALE_RATIO))
@@ -97,6 +96,14 @@ class Player(Sprite):
         dx = motion_vector[0] * CAMERA_SPEED
         dy = motion_vector[1] * CAMERA_SPEED
 
+        # update rectangle's top left corner coords
+        # according to the player's current position
+        # FIXME: may be unnecessary now, but have to be updated
+        # self.rect.left = self.x - self.rect.width // 2
+        # self.rect.top = self.y - self.rect.height // 2
+        # top left corner coords are recalculated automatically
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
         if collidablesStorage.can_move(self.rect, dx, dy):
             self.x += dx
             self.y += dy

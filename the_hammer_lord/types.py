@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 
 Size2D = tp.Tuple[int, int]
-Vector2D = [float, float]
+Vector2D = tp.Tuple[float, float]
+Point = tp.Tuple[int, int]
 
 
 @dataclass

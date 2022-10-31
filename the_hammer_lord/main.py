@@ -57,7 +57,7 @@ def main():
         BaseEnemy(800, 1500, target_for_chasing=player),
     ]
 
-    # as we're moving towards a 2d platformer enemies are not collidable anymore
+    # as we're moving towards a 2d platformer, enemies are not collidable anymore
     collidablesStorage.extend([player.rect])
 
     # some graphic objects
