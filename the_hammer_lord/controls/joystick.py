@@ -1,7 +1,7 @@
-from the_hammer_lord.controls.controls import Controls
+from the_hammer_lord.controls.controls import IControls
 
 
-class JoystickControls(Controls):
+class JoystickControls(IControls):
     def _handle_movement(self, axis: int, val: float):
         if axis < 2:
             self.motion_vector[axis] = val

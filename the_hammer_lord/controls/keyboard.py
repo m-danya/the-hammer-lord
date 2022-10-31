@@ -1,9 +1,9 @@
 import pygame
 
-from the_hammer_lord.controls.controls import Controls
+from the_hammer_lord.controls.controls import IControls
 
 
-class KeyboardControls(Controls):
+class KeyboardControls(IControls):
     def _handle_movement(self, key: pygame.key, key_up: bool = False):
         match key:
             case pygame.K_a:

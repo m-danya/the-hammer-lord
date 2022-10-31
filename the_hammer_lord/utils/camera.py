@@ -3,7 +3,7 @@ from __future__ import annotations
 import pygame
 import typing as tp
 
-from the_hammer_lord.types.movement import Vector2D
+from the_hammer_lord.types import Vector2D
 
 from the_hammer_lord.settings import *
 

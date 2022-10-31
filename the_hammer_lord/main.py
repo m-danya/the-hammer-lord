@@ -1,8 +1,9 @@
-import sys
 import time
+import logging
+import sys
+from pathlib import Path
 
 import pygame
-import logging
 
 from the_hammer_lord.settings import *
 
@@ -26,6 +27,8 @@ def exit_game():
 
 
 def main():
+    # turn on debug mode for the sake of development
+    logging.basicConfig(level=logging.DEBUG)
     # TODO: encapsulate in Player class
     move_controls = KeyboardControls()
     # prepare joystick input if available
@@ -34,7 +37,7 @@ def main():
         pygame.joystick.Joystick(0)
         move_controls = JoystickControls()
     except pygame.error:
-        logging.error("No controller detected, falling back to keyboard insert")
+        logging.warning("No controller detected, falling back to keyboard input")
 
     # prepare to draw
     pygame.init()
@@ -55,7 +58,7 @@ def main():
     ]
 
     # as we're moving towards a 2d platformer enemies are not collidable anymore
-    collidablesStorage.extend([player])
+    collidablesStorage.extend([player.rect])
 
     # some graphic objects
     # (they will be removed when the level system will be implemented)
@@ -120,7 +123,7 @@ def main():
             player.main(display=screen, motion_vector=move_controls.motion_vector)
             camera.main(motion_vector=move_controls.motion_vector)
 
-            # enemy rendering
+            # render enemies
             for enemy in enemies:
                 enemy.main(display=screen)
 

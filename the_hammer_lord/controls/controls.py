@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 
-from the_hammer_lord.types.movement import Vector2D
+from the_hammer_lord.types import Vector2D
 from the_hammer_lord.settings import GRAVITY_FORCE
 
 
-class Controls(ABC):
+class IControls(ABC):
     _motion_vector: Vector2D = [0, 0]
     _jumping: bool = False
 
