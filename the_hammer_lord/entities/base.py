@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class GameObject:
+class BaseEntity:
     x: float
     y: float
     width: float

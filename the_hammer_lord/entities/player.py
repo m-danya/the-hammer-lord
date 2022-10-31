@@ -1,14 +1,14 @@
 import pygame
 
 from the_hammer_lord.types.movement import Vector2D
-from .object import GameObject
+from the_hammer_lord.entities.base import BaseEntity
 
 from the_hammer_lord.settings import *
 from the_hammer_lord.ui.health_bar import HealthBar
 from the_hammer_lord.global_ctx import camera, collidablesStorage
 
 
-class Player(GameObject):
+class Player(BaseEntity):
     def __init__(self):
         self.width = PLAYER_SPRITE_WIDTH * SCALE_RATIO
         self.height = PLAYER_SPRITE_HEIGHT * SCALE_RATIO
@@ -37,10 +37,7 @@ class Player(GameObject):
 
     def animation_step(self):
         # check if enough time has passed since the last update
-        if (
-            pygame.time.get_ticks() - self.update_time
-            > PLAYER_ANIMATION_COOLDOWN
-        ):
+        if pygame.time.get_ticks() - self.update_time > PLAYER_ANIMATION_COOLDOWN:
             self.frame_index += 1
             if self.frame_index >= self.animations_length[self.action]:
                 self.frame_index = 0
@@ -77,8 +74,6 @@ class Player(GameObject):
         if collidablesStorage.can_move(self, dx, dy):
             self.x += dx
             self.y += dy
-        else:
-            motion_vector[1] = 0
 
     def load_images(self):
         animation_list = {}

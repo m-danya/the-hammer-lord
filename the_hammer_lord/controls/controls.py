@@ -5,11 +5,8 @@ from the_hammer_lord.settings import GRAVITY_FORCE
 
 
 class Controls(ABC):
-    _motion_vector: Vector2D
+    _motion_vector: Vector2D = [0, 0]
     _jumping: bool = False
-
-    def __init__(self):
-        self._motion_vector = [0, 0]
 
     @property
     def motion_vector(self) -> Vector2D:
@@ -31,4 +28,3 @@ class Controls(ABC):
     @abstractmethod
     def handle_movement(self, *args, **kwargs):
         pass
-

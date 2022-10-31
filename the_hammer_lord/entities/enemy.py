@@ -1,7 +1,7 @@
 import pygame
 import math
 
-from .object import GameObject
+from the_hammer_lord.entities.base import BaseEntity
 
 from the_hammer_lord.settings import *
 from the_hammer_lord.ui.health_bar import HealthBar
@@ -9,7 +9,7 @@ from the_hammer_lord.ui.health_bar import HealthBar
 from the_hammer_lord.global_ctx import camera, collidablesStorage
 
 
-class BaseEnemy(GameObject):
+class BaseEnemy(BaseEntity):
     def __init__(self, x, y, target_for_chasing):
         # center coords
         self.x = x

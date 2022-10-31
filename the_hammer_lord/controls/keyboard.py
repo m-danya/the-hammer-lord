@@ -1,6 +1,6 @@
 import pygame
 
-from .controls import Controls
+from the_hammer_lord.controls.controls import Controls
 
 
 class KeyboardControls(Controls):

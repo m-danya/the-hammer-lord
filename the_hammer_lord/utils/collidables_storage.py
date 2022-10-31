@@ -4,11 +4,11 @@ import typing as tp
 
 import pygame
 
-from the_hammer_lord.entities.object import GameObject
+from the_hammer_lord.entities.base import BaseEntity
 
 
 class ObjectBox:
-    def __init__(self, obj: GameObject):
+    def __init__(self, obj: BaseEntity):
         self.left_x = obj.x - obj.width // 2
         self.width = obj.width
         self.height = obj.height
@@ -24,7 +24,7 @@ class ObjectBox:
 
 # a class for storing all objects, capable of colliding with others
 class CollidablesStorage:
-    _objects: tp.List[GameObject] = []
+    _objects: tp.List[BaseEntity] = []
 
     def extend(self, objects: tp.Iterable):
         self._objects.extend(objects)
