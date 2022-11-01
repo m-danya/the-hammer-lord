@@ -2,11 +2,9 @@ import pygame
 import math
 
 from the_hammer_lord.entities.base import BaseEntity
-
 from the_hammer_lord.settings import *
 from the_hammer_lord.ui.health_bar import HealthBar
-
-from the_hammer_lord.global_ctx import camera, collidablesStorage
+from the_hammer_lord.global_ctx import collidablesStorage
 
 
 class BaseEnemy(BaseEntity):
@@ -43,31 +41,33 @@ class BaseEnemy(BaseEntity):
             self.y += dy
 
     def render(self, display: pygame.Surface):
+        pass
         # enemy is a composition of 2 rectangles for now
-        pygame.draw.rect(
-            display,
-            "darkblue",
-            pygame.Rect(
-                *camera.get_object_coords(
-                    self.x - ENEMY_TEST_RECT_SIZE[0] // 2,
-                    self.y - ENEMY_TEST_RECT_SIZE[1] // 2,
-                ),
-                *ENEMY_TEST_RECT_SIZE,
-            ),
-        )
-        pygame.draw.rect(
-            display,
-            "red",
-            pygame.Rect(
-                *camera.get_object_coords(
-                    self.x,
-                    self.y,
-                ),
-                ENEMY_TEST_RECT_SIZE[0] // 2,
-                ENEMY_TEST_RECT_SIZE[0] // 2,
-            ),
-        )
+        # pygame.draw.rect(
+        #     display,
+        #     "darkblue",
+        #     pygame.Rect(
+        #         *camera.calc_render_coords(
+        #             self.x - ENEMY_TEST_RECT_SIZE[0] // 2,
+        #             self.y - ENEMY_TEST_RECT_SIZE[1] // 2,
+        #         ),
+        #         *ENEMY_TEST_RECT_SIZE,
+        #     ),
+        # )
 
-        self.health_bar.render(
-            display, self.x, self.y - ENEMY_TEST_RECT_SIZE[1] // 2 - 30
-        )
+        # pygame.draw.rect(
+        #     display,
+        #     "red",
+        #     pygame.Rect(
+        #         *camera.calc_render_coords(
+        #             self.x,
+        #             self.y,
+        #         ),
+        #         ENEMY_TEST_RECT_SIZE[0] // 2,
+        #         ENEMY_TEST_RECT_SIZE[0] // 2,
+        #     ),
+        # )
+
+        # self.health_bar.render(
+        #     display, self.x, self.y - ENEMY_TEST_RECT_SIZE[1] // 2 - 30
+        # )

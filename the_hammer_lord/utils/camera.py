@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import pygame
 import typing as tp
 
-from the_hammer_lord.types import Vector2D
-
+from the_hammer_lord.types import Vector2D, Point
+from the_hammer_lord.entities.base import BaseEntity
 from the_hammer_lord.settings import *
 
 # prevent cycle imports
@@ -13,21 +12,25 @@ if tp.TYPE_CHECKING:
 
 
 class Camera:
-    x: float
-    y: float
-    player: tp.Optional[Player] = None
+    # coords of the center of a viewport
+    # relative to the LEVEL coordinate system
+    x: int
+    y: int
+    _player: tp.Optional[Player] = None
+    _scale_factor: float = 1
 
-    def __init__(self, x: float, y: float):
+    def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
 
-    def main(self, motion_vector: Vector2D):
-        self.move(motion_vector)
+    # could be used for zooming scene in / out
+    def scale(self, scale_factor: float):
+        self._scale_factor = scale_factor
 
     def move(self, motion_vector: Vector2D):
         # if player is bound, camera follows it
-        if self.player:
-            self.x, self.y = self.player.camera_adjusted_coords
+        if self._player:
+            self.x, self.y = self._player.x, self._player.y
             return
 
         # otherwise it moves independently of player
@@ -35,21 +38,14 @@ class Camera:
         self.x += motion_vector[0] * CAMERA_SPEED
         self.y += motion_vector[1] * CAMERA_SPEED
 
-    def get_object_coords(self, x: float, y: float) -> Vector2D:
-        return x - self.x, y - self.y
+    def calc_render_coords(self, ent: BaseEntity) -> Point:
+        return ((SCREEN_SIZE[0] * self._scale_factor) // 2 + ent.x - self.x,
+                (SCREEN_SIZE[1] * self._scale_factor) // 2 + ent.y - self.y)
 
     def bind_player(self, player: Player):
-        self.player = player
+        self._player = player
+        self.x = player.x
+        self.y = player.y
 
     def unbind_player(self):
-        self.player = None
-
-
-def get_scaled_size(size: tuple[int, int]):
-    return size[0] * SCALE_RATIO, size[1] * SCALE_RATIO
-
-
-def scale_pixel_image(image: pygame.Surface):
-    size = image.get_size()
-    scaled = pygame.transform.scale(image, get_scaled_size(size))
-    return scaled
+        self._player = None

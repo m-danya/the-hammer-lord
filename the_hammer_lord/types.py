@@ -3,9 +3,9 @@ from enum import Enum, auto
 from dataclasses import dataclass
 
 
-Size2D = tp.Tuple[int, int]
-Vector2D = tp.Tuple[float, float]
-Point = tp.Tuple[int, int]
+Size2D = tuple[int, int]
+Vector2D = list[float, float]
+Point = tuple[int, int]
 
 
 @dataclass

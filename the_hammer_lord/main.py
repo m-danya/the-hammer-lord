@@ -1,7 +1,6 @@
 import time
 import logging
 import sys
-from pathlib import Path
 
 import pygame
 
@@ -10,15 +9,7 @@ from the_hammer_lord.settings import *
 from the_hammer_lord.controls.joystick import JoystickControls
 from the_hammer_lord.controls.keyboard import KeyboardControls
 
-from the_hammer_lord.entities.enemy import BaseEnemy
-from the_hammer_lord.entities.player import Player
-
-from the_hammer_lord.utils.camera import (
-    get_scaled_size,
-    scale_pixel_image,
-)
-
-from the_hammer_lord.global_ctx import camera, collidablesStorage
+from the_hammer_lord.level.level import Level
 
 
 def exit_game():
@@ -29,7 +20,6 @@ def exit_game():
 def main():
     # turn on debug mode for the sake of development
     logging.basicConfig(level=logging.DEBUG)
-    # TODO: encapsulate in Player class
     move_controls = KeyboardControls()
     # prepare joystick input if available
     try:
@@ -49,84 +39,35 @@ def main():
 
     # clock = pygame.time.Clock() <- an alternative to perf_counter
 
-    player = Player()
-    camera.bind_player(player)
+    current_level = Level()
+    current_level.generate()
+    current_level.spawn_player()
 
-    enemies = [
-        BaseEnemy(500, 1000, target_for_chasing=player),
-        BaseEnemy(800, 1500, target_for_chasing=player),
-    ]
-
-    # as we're moving towards a 2d platformer, enemies are not collidable anymore
-    collidablesStorage.extend([player.rect])
-
-    # some graphic objects
-    # (they will be removed when the level system will be implemented)
-    tile_img = pygame.image.load(
-        Path(__file__).parent / "assets/images/trash/tile.png"
-    ).convert_alpha()
-    tile_img = scale_pixel_image(tile_img)
-
-    k_img = pygame.image.load(
-        Path(__file__).parent / "assets/images/trash/k.png"
-    ).convert_alpha()
-    k_img = scale_pixel_image(k_img)
-
-    with open(Path(__file__).parent / "assets/maps/trash_map.txt") as f:
-        map_array = [[int(x) for x in line.split()] for line in f.readlines()]
-
+    # main event loop
     while True:
-        can_render = False
         time_2 = time.perf_counter()
         passed = time_2 - time_1
         unprocessed += passed
         time_1 = time_2
         while unprocessed >= frame_cap:
             unprocessed -= frame_cap
-            can_render = True
-        if can_render:
-            for event in pygame.event.get():
-                match event.type:
-                    case pygame.JOYAXISMOTION:
-                        move_controls.handle_movement(event.axis, event.value)
-                    case pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            exit_game()
 
-                        move_controls.handle_movement(event.key)
-                    case pygame.KEYUP:
-                        move_controls.handle_movement(event.key, key_up=True)
-                    case pygame.QUIT:
+        for event in pygame.event.get():
+            match event.type:
+                case pygame.JOYAXISMOTION:
+                    move_controls.handle_movement(event.axis, event.value)
+                case pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
                         exit_game()
 
-            screen.fill("grey")
+                    move_controls.handle_movement(event.key)
+                case pygame.KEYUP:
+                    move_controls.handle_movement(event.key, key_up=True)
+                case pygame.QUIT:
+                    exit_game()
 
-            # background tiles
-            tile_size = get_scaled_size((32, 32))
-            for i, row in enumerate(map_array):
-                for j, item in enumerate(row):
-                    if item:
-                        tile = tile_img.get_rect().move(
-                            *camera.get_object_coords(
-                                i * tile_size[0] + 400, j * tile_size[1] - 500
-                            )
-                        )
-                        screen.blit(tile_img, tile)
+        # render current level
+        current_level.update(display=screen, motion_vector=move_controls.motion_vector)
 
-            # superkontik, will be removed (isn't it?)
-            k_rect = k_img.get_rect()
-            k_rect = k_rect.move(*camera.get_object_coords(2400, 1500))
-            screen.blit(k_img, k_rect)
-
-            # draw properly implemented objects
-            # as camera follows our player, we're moving it first
-            player.main(display=screen, motion_vector=move_controls.motion_vector)
-            camera.main(motion_vector=move_controls.motion_vector)
-
-            # render enemies
-            for enemy in enemies:
-                enemy.main(display=screen)
-
-            move_controls.apply_gravity()
-
-            pygame.display.flip()
+        move_controls.apply_gravity()
+        pygame.display.flip()

@@ -1,11 +1,11 @@
 import logging
-import typing as tp
 from enum import Enum, auto
 
-from pygame import Rect, sprite
+from pygame import Rect, Surface, image, sprite
 
 from the_hammer_lord.types import Point
-from the_hammer_lord.entities.base import BaseEntity
+from the_hammer_lord.assets.sprites import SPRITES
+from the_hammer_lord.utils.transform import scale_pixel_image
 
 
 class SurfaceType(Enum):
@@ -21,18 +21,25 @@ class CollisionSurface:
     # this parameter changes this behaviour to the top of the screen and right screen side
     # for vertical and horizontal surfaces accordingly
     _reverse_mapping: bool = False
-    _breakpoints: tp.List[Point]
-    _collision_rects: tp.List[Rect] = []
+    _breakpoints: list[Point] = []
+    # using sprite group instead of plain rects to render textures
+    _collision_rects: sprite.Group = sprite.Group()
     _locked: bool = False
+    # sprites texture
+    _texture: Surface
 
     def __init__(self, surface_type: SurfaceType, width: int, height: int):
         self._type = surface_type
         self._height = height
         self._width = width
+        self._texture = scale_pixel_image(image.load(SPRITES['Background']).convert_alpha())
 
     def _form_rects(self):
-        self._collision_rects = []
+        self._collision_rects.empty()
         for index, point in enumerate(self._breakpoints):
+            new_sprite = sprite.Sprite()
+            new_sprite.image = self._texture
+
             last_breakpoint = index == len(self._breakpoints) - 1
             cur_x, cur_y = 0, 0
             cur_w, cur_h = 0, 0
@@ -49,9 +56,10 @@ class CollisionSurface:
                     cur_y = cur_h
                     # TODO: add reverse_mapping checking
 
-            self._collision_rects.append(Rect((cur_x, cur_y), (cur_w, cur_h)))
+            new_sprite.rect = Rect((cur_x, cur_y), (cur_w, cur_h))
+            self._collision_rects.add(new_sprite)
 
-    def add_breakpoints(self, breakpoint_list: tp.List[Point]):
+    def add_breakpoints(self, breakpoint_list: list[Point]):
         if self._locked:
             logging.warning('The surface has been locked: no breakpoints can be added')
             return
@@ -70,10 +78,11 @@ class CollisionSurface:
     def unlock(self):
         self._locked = False
 
-    def collides_with(self, ent: BaseEntity) -> bool:
+    # TODO: maybe track rect collision as well in the future
+    def collides_with(self, spr: sprite.Sprite) -> bool:
         if not self._locked:
             logging.error('Only locked surfaces can be used for collision tracking')
             return False
 
         # TODO: maybe we need to center ent.x and ent.y
-        return Rect((ent.x, ent.y), (ent.width, ent.height)).collidelist(self._collision_rects) != -1
+        return sprite.spritecollideany(spr, self._collision_rects) is not None

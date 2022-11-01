@@ -24,7 +24,7 @@ class BoundingRect:
 
 # a class for storing all objects, capable of colliding with others
 class CollidablesStorage:
-    _objects: tp.List[BaseEntity] = []
+    _objects: list[BaseEntity] = []
 
     def extend(self, objects: tp.Iterable):
         self._objects.extend(objects)
