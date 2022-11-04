@@ -17,6 +17,10 @@ class BaseEntity:
     width: int
     height: int
 
+    @property
+    def position(self) -> Point:
+        return self.x, self.y
+
 
 class StaticEntity(ABC, BaseEntity, Sprite):
     def __init__(self, dimensions: Size2D, pos: Point = (0, 0)):

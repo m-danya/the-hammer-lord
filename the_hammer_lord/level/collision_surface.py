@@ -3,9 +3,10 @@ from enum import Enum, auto
 
 from pygame import Rect, Surface, image, sprite
 
-from the_hammer_lord.types import Point
+from the_hammer_lord.types import Point, Size2D
 from the_hammer_lord.assets.sprites import SPRITES
-from the_hammer_lord.utils.transform import scale_pixel_image
+from the_hammer_lord.utils.camera import Camera
+from the_hammer_lord.utils.transform import fill_surface
 
 
 class SurfaceType(Enum):
@@ -15,8 +16,7 @@ class SurfaceType(Enum):
 
 class CollisionSurface:
     _type: SurfaceType
-    _width: int
-    _height: int
+    _lvl_size: Size2D
     # by default, vertical surfaces are glued to the bottom of the screen, horizontal - to the left screen side;
     # this parameter changes this behaviour to the top of the screen and right screen side
     # for vertical and horizontal surfaces accordingly
@@ -28,11 +28,10 @@ class CollisionSurface:
     # sprites texture
     _texture: Surface
 
-    def __init__(self, surface_type: SurfaceType, width: int, height: int):
+    def __init__(self, surface_type: SurfaceType, lvl_size: Size2D):
         self._type = surface_type
-        self._height = height
-        self._width = width
-        self._texture = scale_pixel_image(image.load(SPRITES['Background']).convert_alpha())
+        self._lvl_size = lvl_size
+        self._texture = image.load(SPRITES['BrickTile']).convert_alpha()
 
     def _form_rects(self):
         self._collision_rects.empty()
@@ -50,13 +49,14 @@ class CollisionSurface:
                     pass
                 case SurfaceType.VERTICAL:
                     # extend last breakpoint till the end of the surface
-                    cur_w = self._breakpoints[index + 1][0] - cur_x if not last_breakpoint else self._width - cur_x
-                    cur_h = point[1]
+                    cur_w = self._breakpoints[index + 1][0] - point[0] if not last_breakpoint else self._lvl_size[0] - point[0]
+                    cur_h = self._lvl_size[1] - point[1]
                     cur_x = point[0]
-                    cur_y = cur_h
+                    cur_y = point[1]
                     # TODO: add reverse_mapping checking
 
             new_sprite.rect = Rect((cur_x, cur_y), (cur_w, cur_h))
+            new_sprite.image = fill_surface((cur_w, cur_h), self._texture)
             self._collision_rects.add(new_sprite)
 
     def add_breakpoints(self, breakpoint_list: list[Point]):
@@ -78,11 +78,23 @@ class CollisionSurface:
     def unlock(self):
         self._locked = False
 
-    # TODO: maybe track rect collision as well in the future
-    def collides_with(self, spr: sprite.Sprite) -> bool:
+    # tracks horizontal and vertical collision
+    def collides_with(self, ent: sprite.Sprite) -> (bool, bool):
         if not self._locked:
             logging.error('Only locked surfaces can be used for collision tracking')
             return False
 
-        # TODO: maybe we need to center ent.x and ent.y
-        return sprite.spritecollideany(spr, self._collision_rects) is not None
+        collided_sprite = sprite.spritecollideany(ent, self._collision_rects)
+        if collided_sprite:
+            return (collided_sprite.rect.x <= ent.rect.x <= collided_sprite.rect.x + collided_sprite.rect.width,
+                    collided_sprite.rect.y <= ent.rect.y)
+
+        return False, False
+
+    def render(self, display: Surface, camera: Camera):
+        if not self._locked:
+            logging.error('Only locked surfaces can be rendered')
+            return
+
+        for rect_sprite in self._collision_rects.sprites():
+            display.blit(rect_sprite.image, camera.calc_render_coords((rect_sprite.rect.x, rect_sprite.rect.y)))

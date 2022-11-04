@@ -9,5 +9,6 @@ PLAYER_ANIMATIONS: Dict[PlayerAction, Animation] = {
 }
 
 SPRITES = {
-    'Background': f'{Path(__file__).parent}/images/background.png',
+    'LevelBackground1': f'{Path(__file__).parent}/images/backgrounds/level_background1.jpg',
+    'BrickTile': f'{Path(__file__).parent}/images/tiles/brick_tile.jpg',
 }
