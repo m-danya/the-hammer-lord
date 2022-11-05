@@ -42,6 +42,10 @@ class Level:
         self._player = Player(pos)
         self._collidables.extend([self._player])
 
+    def setup(self, *args, **kwargs):
+        self.generate()
+        self.spawn_player()
+
     def reset(self):
         pass
 

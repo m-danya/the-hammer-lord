@@ -4,7 +4,7 @@ import sys
 
 import pygame
 
-from the_hammer_lord.settings import SCREEN_SIZE
+from the_hammer_lord.settings import SCREEN_SIZE, TARGET_FRAMERATE
 from the_hammer_lord.controls.joystick import JoystickControls
 from the_hammer_lord.controls.keyboard import KeyboardControls
 from the_hammer_lord.level.level import Level
@@ -31,46 +31,36 @@ def main():
     pygame.init()
     pygame.display.set_caption("The Hammer Lord")
     screen = pygame.display.set_mode(SCREEN_SIZE, vsync=True)
-    # there are 1e+9 ns in a single s
-    frame_cap = int(1e+9) // 240
-    # using ns for better precision
-    time_1 = time.perf_counter_ns()
-    unprocessed = 0
-
-    # clock = pygame.time.Clock() <- an alternative to perf_counter
+    ticker = pygame.time.Clock()
 
     current_level = Level()
-    current_level.generate()
-    current_level.spawn_player()
+    current_level.setup()
+
+    # using ns for better precision
+    prev_time = time.perf_counter_ns() / 1e9
 
     # main event loop
     while True:
-        can_render = False
-        time_2 = time.perf_counter_ns()
-        passed = time_2 - time_1
-        unprocessed += passed
-        time_1 = time_2
-        if unprocessed >= frame_cap:
-            unprocessed -= (unprocessed // frame_cap) * frame_cap
-            can_render = True
-
-        if not can_render:
-            continue
+        cur_time = time.perf_counter_ns() / 1e9
+        # TODO: this constant has to be multiplied with all moving objects speeds
+        dt = cur_time - prev_time
+        prev_time = cur_time
 
         for event in pygame.event.get():
             match event.type:
                 case pygame.JOYAXISMOTION:
-                    move_controls.handle_movement(event.axis, event.value)
+                    move_controls.get_input(event.axis, event.value)
                 case pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         exit_game()
-
-                    move_controls.handle_movement(event.key)
-                case pygame.KEYUP:
-                    move_controls.handle_movement(event.key, key_up=True)
                 case pygame.QUIT:
                     exit_game()
+
+        if isinstance(move_controls, KeyboardControls):
+            move_controls.get_input()
 
         # render current level
         current_level.update(display=screen, motion_vector=move_controls.motion_vector)
         pygame.display.flip()
+
+        ticker.tick(TARGET_FRAMERATE)

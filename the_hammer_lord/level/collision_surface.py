@@ -4,6 +4,7 @@ from enum import Enum, auto
 from pygame import Rect, Surface, image, sprite
 
 from the_hammer_lord.types import Point, Size2D
+from the_hammer_lord.entities.base import StaticEntity
 from the_hammer_lord.assets.sprites import SPRITES
 from the_hammer_lord.utils.camera import Camera
 from the_hammer_lord.utils.transform import fill_surface
@@ -79,7 +80,7 @@ class CollisionSurface:
         self._locked = False
 
     # tracks horizontal and vertical collision
-    def collides_with(self, ent: sprite.Sprite) -> (bool, bool):
+    def collides_with(self, ent: StaticEntity) -> (bool, bool):
         if not self._locked:
             logging.error('Only locked surfaces can be used for collision tracking')
             return False

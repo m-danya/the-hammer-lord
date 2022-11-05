@@ -1,5 +1,6 @@
 from math import floor
 
+import pygame.key
 from pygame import time, image, transform, Surface
 
 from the_hammer_lord.types import Vector2D, PlayerAction, Point
