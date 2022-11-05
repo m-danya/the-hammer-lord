@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
@@ -30,6 +31,15 @@ class StaticEntity(ABC, BaseEntity, Sprite):
         # assign associated rectangle
         self.rect = Rect((self.x, self.y), (self.width, self.height))
         self.image = None
+
+    def get_collision_sides(self, other: StaticEntity) -> (bool, bool, bool, bool):
+        collisions = (False, False, False, False)
+
+        if not other:
+            return collisions
+
+        # TODO: implement: https://youtu.be/1_H7InPMjaY?t=268
+        return collisions
 
     @abstractmethod
     def render(self, display: Surface, pos: Point):

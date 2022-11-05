@@ -34,8 +34,7 @@ def main():
     ticker = pygame.time.Clock()
 
     current_level = Level()
-    current_level.generate()
-    current_level.spawn_player()
+    current_level.setup()
 
     # using ns for better precision
     prev_time = time.perf_counter_ns()
@@ -50,16 +49,15 @@ def main():
         for event in pygame.event.get():
             match event.type:
                 case pygame.JOYAXISMOTION:
-                    move_controls.handle_movement(event.axis, event.value)
+                    move_controls.get_input(event.axis, event.value)
                 case pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         exit_game()
-
-                    move_controls.handle_movement(event.key)
-                case pygame.KEYUP:
-                    move_controls.handle_movement(event.key, key_up=True)
                 case pygame.QUIT:
                     exit_game()
+
+        if isinstance(move_controls, KeyboardControls):
+            move_controls.get_input()
 
         # render current level
         current_level.update(display=screen, motion_vector=move_controls.motion_vector)

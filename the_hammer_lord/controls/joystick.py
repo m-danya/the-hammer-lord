@@ -10,5 +10,5 @@ class JoystickControls(IControls):
             if abs(self._motion_vector[1]) < 0.1:
                 self._motion_vector[1] = 0
 
-    def handle_movement(self, *args, **kwargs):
+    def get_input(self, *args, **kwargs):
         self._handle_movement(*args, **kwargs)
