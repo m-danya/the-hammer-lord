@@ -21,7 +21,7 @@ class CollisionSurface:
     # this parameter changes this behaviour to the top of the screen and right screen side
     # for vertical and horizontal surfaces accordingly
     _reverse_mapping: bool = False
-    _breakpoints: list[Point] = []
+    _breakpoints: list[Point]
     # using sprite group instead of plain rects to render textures
     _collision_rects: sprite.Group = sprite.Group()
     _locked: bool = False
@@ -31,25 +31,32 @@ class CollisionSurface:
     def __init__(self, surface_type: SurfaceType, lvl_size: Size2D):
         self._type = surface_type
         self._lvl_size = lvl_size
-        self._texture = image.load(SPRITES['BrickTile']).convert_alpha()
+        self._breakpoints = []
+        self._texture = image.load(SPRITES["BrickTile"]).convert_alpha()
 
     def _form_rects(self):
         self._collision_rects.empty()
         for index, point in enumerate(self._breakpoints):
             new_sprite = sprite.Sprite()
-            new_sprite.image = self._texture
 
             last_breakpoint = index == len(self._breakpoints) - 1
             cur_x, cur_y = 0, 0
             cur_w, cur_h = 0, 0
 
             match self._type:
-                case SurfaceType.HORIZONTAL:
+                # walls
+                case SurfaceType.VERTICAL:
                     # TODO: implement
                     pass
-                case SurfaceType.VERTICAL:
+                # floors / ceilings
+                case SurfaceType.HORIZONTAL:
+                    # TODO: move this and future logic to a separate function (e.g. add_joint(breakpoint: Point))
                     # extend last breakpoint till the end of the surface
-                    cur_w = self._breakpoints[index + 1][0] - point[0] if not last_breakpoint else self._lvl_size[0] - point[0]
+                    cur_w = (
+                        self._breakpoints[index + 1][0] - point[0]
+                        if not last_breakpoint
+                        else self._lvl_size[0] - point[0]
+                    )
                     cur_h = self._lvl_size[1] - point[1]
                     cur_x = point[0]
                     cur_y = point[1]
@@ -61,7 +68,7 @@ class CollisionSurface:
 
     def add_breakpoints(self, breakpoint_list: list[Point]):
         if self._locked:
-            logging.warning('The surface has been locked: no breakpoints can be added')
+            logging.warning("The surface has been locked: no breakpoints can be added")
             return
 
         self._breakpoints.extend(breakpoint_list)
@@ -81,20 +88,27 @@ class CollisionSurface:
     # tracks horizontal and vertical collision
     def collides_with(self, ent: sprite.Sprite) -> (bool, bool):
         if not self._locked:
-            logging.error('Only locked surfaces can be used for collision tracking')
+            logging.error("Only locked surfaces can be used for collision tracking")
             return False
 
         collided_sprite = sprite.spritecollideany(ent, self._collision_rects)
         if collided_sprite:
-            return (collided_sprite.rect.x <= ent.rect.x <= collided_sprite.rect.x + collided_sprite.rect.width,
-                    collided_sprite.rect.y <= ent.rect.y)
+            return (
+                collided_sprite.rect.x
+                <= ent.rect.x
+                <= collided_sprite.rect.x + collided_sprite.rect.width,
+                collided_sprite.rect.y <= ent.rect.y,
+            )
 
         return False, False
 
     def render(self, display: Surface, camera: Camera):
         if not self._locked:
-            logging.error('Only locked surfaces can be rendered')
+            logging.error("Only locked surfaces can be rendered")
             return
 
         for rect_sprite in self._collision_rects.sprites():
-            display.blit(rect_sprite.image, camera.calc_render_coords((rect_sprite.rect.x, rect_sprite.rect.y)))
+            display.blit(
+                rect_sprite.image,
+                camera.calc_render_coords((rect_sprite.rect.x, rect_sprite.rect.y)),
+            )

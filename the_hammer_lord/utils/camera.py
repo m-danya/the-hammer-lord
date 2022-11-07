@@ -45,12 +45,16 @@ class Camera:
     @property
     def viewport_area(self) -> (Point, Point):
         scaled_screen_shift = (self._viewport_size[0] // 2, self._viewport_size[1] // 2)
-        return ((self.x - scaled_screen_shift[0], self.y - scaled_screen_shift[1]),
-                (self.x + scaled_screen_shift[0], self.y + scaled_screen_shift[1]))
+        return (
+            (self.x - scaled_screen_shift[0], self.y - scaled_screen_shift[1]),
+            (self.x + scaled_screen_shift[0], self.y + scaled_screen_shift[1]),
+        )
 
     def calc_render_coords(self, ent_coords: Point) -> Point:
-        return (self._viewport_size[0] // 2 + ent_coords[0] - self.x,
-                self._viewport_size[1] // 2 + ent_coords[1] - self.y)
+        return (
+            self._viewport_size[0] // 2 + ent_coords[0] - self.x,
+            self._viewport_size[1] // 2 + ent_coords[1] - self.y,
+        )
 
     def bind_player(self, player: Player):
         self._player = player

@@ -8,6 +8,8 @@ from pygame.sprite import Sprite
 from the_hammer_lord.types import Point, Size2D
 
 
+# TODO: get rid of this class and instead
+#   add @property mappings to sprite.rect props in StaticEntity
 @dataclass
 class BaseEntity:
     # entity's top left coords
@@ -34,6 +36,7 @@ class StaticEntity(ABC, BaseEntity, Sprite):
         pass
 
 
+# TODO: maybe move method should be added as well...
 class DynamicEntity(StaticEntity):
     @abstractmethod
     def update(self, *args: Any, **kwargs: Any):

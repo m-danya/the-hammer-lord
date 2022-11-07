@@ -14,24 +14,32 @@ class Level:
     _floor: CollisionSurface
     _ceiling: CollisionSurface
     _camera: Camera
-    _collidables: CollidablesStorage = CollidablesStorage()
+    _collidables: CollidablesStorage
     _player: Player
     _level_bg: Surface
 
     def __init__(self, level_size: Size2D = (3840, 1200)):
         self._size = level_size
         self._camera = Camera(self._size[0] // 2, self._size[1] // 2)
+        self._collidables = CollidablesStorage()
 
     def _player_fits_screen(self) -> (bool, bool):
-        cur_screen_shift = (self._camera.viewport_size[0] // 2, self._camera.viewport_size[1] // 2)
-        return (self._player.x - cur_screen_shift[0] > 0 and self._player.x + cur_screen_shift[0] < self._size[0],
-                self._player.y - cur_screen_shift[1] > 0 and self._player.y + cur_screen_shift[1] < self._size[1])
+        cur_screen_shift = (
+            self._camera.viewport_size[0] // 2,
+            self._camera.viewport_size[1] // 2,
+        )
+        return (
+            self._player.x - cur_screen_shift[0] > 0
+            and self._player.x + cur_screen_shift[0] < self._size[0],
+            self._player.y - cur_screen_shift[1] > 0
+            and self._player.y + cur_screen_shift[1] < self._size[1],
+        )
 
     # generates the structure of the level, different params could be passed in the future
     def generate(self):
-        self._level_bg = image.load(SPRITES['LevelBackground1']).convert_alpha()
+        self._level_bg = image.load(SPRITES["LevelBackground1"]).convert_alpha()
         self._level_bg = transform.scale(self._level_bg, self._size)
-        self._floor = CollisionSurface(SurfaceType.VERTICAL, self._size)
+        self._floor = CollisionSurface(SurfaceType.HORIZONTAL, self._size)
         self._floor.add_breakpoints([(0, 500), (420, 800), (800, 700)])
         self._floor.lock()
 
@@ -51,7 +59,9 @@ class Level:
         display.blit(self._level_bg, self._camera.calc_render_coords((0, 0)))
 
         self._floor.render(display, self._camera)
-        self._player.update(display, self._camera.calc_render_coords(self._player.position))
+        self._player.update(
+            display, self._camera.calc_render_coords(self._player.position)
+        )
 
         # FIXME: add proper collision checking
         x_collision, y_collision = self._floor.collides_with(self._player)
