@@ -4,7 +4,6 @@ from enum import Enum, auto
 from pygame import Rect, Surface, image, sprite
 
 from the_hammer_lord.types import Point, Size2D
-from the_hammer_lord.entities.base import StaticEntity
 from the_hammer_lord.assets.sprites import SPRITES
 from the_hammer_lord.utils.camera import Camera
 from the_hammer_lord.utils.transform import fill_surface
@@ -16,13 +15,13 @@ class SurfaceType(Enum):
 
 
 class CollisionSurface:
+    # A visual representation for some SurfaceType.HORIZONTAL CollisionSurface:
+    #                   _______                                     _________
+    #         __________       _________
+    #   ______                          ____________________________
     _type: SurfaceType
     _lvl_size: Size2D
-    # by default, vertical surfaces are glued to the bottom of the screen, horizontal - to the left screen side;
-    # this parameter changes this behaviour to the top of the screen and right screen side
-    # for vertical and horizontal surfaces accordingly
-    _reverse_mapping: bool = False
-    _breakpoints: list[Point]
+    _forming_points: list[Point]
     # using sprite group instead of plain rects to render textures
     _collision_rects: sprite.Group = sprite.Group()
     _locked: bool = False
@@ -32,76 +31,60 @@ class CollisionSurface:
     def __init__(self, surface_type: SurfaceType, lvl_size: Size2D):
         self._type = surface_type
         self._lvl_size = lvl_size
-        self._breakpoints = []
+        self._forming_points = []
         self._texture = image.load(SPRITES["BrickTile"]).convert_alpha()
 
     def _form_rects(self):
         self._collision_rects.empty()
-        for index, point in enumerate(self._breakpoints):
+        for index, point in enumerate(self._forming_points):
             new_sprite = sprite.Sprite()
 
-            last_breakpoint = index == len(self._breakpoints) - 1
+            is_last_forming_point = index == len(self._forming_points) - 1
             cur_x, cur_y = 0, 0
             cur_w, cur_h = 0, 0
 
             match self._type:
-                # walls
                 case SurfaceType.VERTICAL:
+                    # walls
                     # TODO: implement
                     pass
-                # floors / ceilings
                 case SurfaceType.HORIZONTAL:
-                    # TODO: move this and future logic to a separate function (e.g. add_joint(breakpoint: Point))
-                    # extend last breakpoint till the end of the surface
+                    # floors / ceilings
+                    # TODO: move this and future logic to a separate function (e.g. add_joint(forming_point: Point))
+                    # extend last forming_point till the end of the surface
                     cur_w = (
-                        self._breakpoints[index + 1][0] - point[0]
-                        if not last_breakpoint
+                        self._forming_points[index + 1][0] - point[0]
+                        if not is_last_forming_point
                         else self._lvl_size[0] - point[0]
                     )
                     cur_h = self._lvl_size[1] - point[1]
                     cur_x = point[0]
                     cur_y = point[1]
-                    # TODO: add reverse_mapping checking
-
             new_sprite.rect = Rect((cur_x, cur_y), (cur_w, cur_h))
             new_sprite.image = fill_surface((cur_w, cur_h), self._texture)
             self._collision_rects.add(new_sprite)
 
-    def add_breakpoints(self, breakpoint_list: list[Point]):
+    def add_forming_points(self, forming_points_list: list[Point]):
         if self._locked:
-            logging.warning("The surface has been locked: no breakpoints can be added")
+            logging.error("The surface has been locked: no forming points can be added")
             return
 
-        self._breakpoints.extend(breakpoint_list)
+        self._forming_points.extend(forming_points_list)
 
-    # locks the scene and enables collision testing, while restricting adding breakpoints
+    # locks the scene and enables collision testing, while restricting adding forming points
     def lock(self):
         self._locked = True
         # TODO: sorted list could be used for optimised collision checking
-        #   by determining the closest breakpoint pair to the player's position
-        self._breakpoints.sort()
+        #   by determining the closest forming point pair to the player's position
+        self._forming_points.sort()
         self._form_rects()
 
-    # unlocks the scene and thus allows adding breakpoints, but disables collision testing
+    # unlocks the scene and thus allows adding forming points, but disables collision testing
     def unlock(self):
         self._locked = False
 
-    # tracks horizontal and vertical collision
-    def collides_with(self, ent: StaticEntity) -> (bool, bool):
-        if not self._locked:
-            logging.error("Only locked surfaces can be used for collision tracking")
-            return False
-
-        collided_sprite = sprite.spritecollideany(ent, self._collision_rects)
-        if collided_sprite:
-            return (
-                collided_sprite.rect.x
-                <= ent.rect.x
-                <= collided_sprite.rect.x + collided_sprite.rect.width,
-                collided_sprite.rect.y <= ent.rect.y,
-            )
-
-        return False, False
+    def get_sprites(self):
+        return self._collision_rects.sprites()
 
     def render(self, display: Surface, camera: Camera):
         if not self._locked:

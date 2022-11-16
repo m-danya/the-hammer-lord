@@ -1,6 +1,10 @@
 import pygame
 
 from the_hammer_lord.controls.controls import IControls
+from the_hammer_lord.settings import (
+    PLAYER_JUMPING_MOMENTUM,
+    PLAYER_SPEED_HORIZONTAL,
+)
 
 
 class KeyboardControls(IControls):
@@ -11,13 +15,13 @@ class KeyboardControls(IControls):
         sp_pressed = keys[pygame.K_SPACE]
 
         if l_pressed and not r_pressed:
-            self._motion_vector[0] = -0.5
+            self._motion_vector[0] = -PLAYER_SPEED_HORIZONTAL
         elif r_pressed and not l_pressed:
-            self._motion_vector[0] = 0.5
+            self._motion_vector[0] = PLAYER_SPEED_HORIZONTAL
         else:
             self.motion_vector[0] = 0
 
-        self._motion_vector[1] = -0.5 if sp_pressed else 0
+        self._motion_vector[1] = -PLAYER_JUMPING_MOMENTUM if sp_pressed else 0
 
     def get_input(self, *args, **kwargs):
         self._get_input()

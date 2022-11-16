@@ -18,6 +18,7 @@ def exit_game():
 def main():
     # turn on debug mode for the sake of development
     logging.basicConfig(level=logging.DEBUG)
+    # public property that is utilized by Player and Camera classes
     move_controls = KeyboardControls()
     # prepare joystick input if available
     try:
@@ -25,7 +26,7 @@ def main():
         pygame.joystick.Joystick(0)
         move_controls = JoystickControls()
     except pygame.error:
-        logging.warning("No controller detected, falling back to keyboard input")
+        logging.info("No controller detected, using keyboard input")
 
     # prepare to draw
     pygame.init()
