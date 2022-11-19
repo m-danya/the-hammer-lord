@@ -33,41 +33,49 @@ class Camera:
     def set_viewport_size(self, size: Size2D):
         self._viewport_size = size
 
-    def detect_locked_axes(self, lvl_size):
+    def detect_locked_axes(self, lvl_size: Size2D):
         x_fits, y_fits = (
             (
-                self._player.rect.centerx - self.viewport_size[0] // 2 > 0
-                and self._player.rect.centerx + self.viewport_size[0] < lvl_size[0]
+                self._player.rect.centerx - self._viewport_size[0] // 2 > 0
+                and self._player.rect.centerx + self._viewport_size[0]
+                < lvl_size[0]
             ),
             (
-                self._player.rect.centery - self.viewport_size[1] // 2 > 0
-                and self._player.rect.centery + self.viewport_size[1] // 2 < lvl_size[1]
+                self._player.rect.centery - self._viewport_size[1] // 2 > 0
+                and self._player.rect.centery + self._viewport_size[1] // 2
+                < lvl_size[1]
             ),
         )
         # y-axis is locked when player is jumping
-        y_fits = y_fits and self._player.is_on_land
+        y_fits = y_fits and self._player.is_on_the_ground
         self._lock_x = not x_fits
         self._lock_y = not y_fits
 
     @staticmethod
-    def move_to_target(target_x: int, current_x: int):
+    def move_to_target(target_coordinate: int, current_coordinate: int):
         # slowly move closer to the player (e.g. when he jumped on something)
-        difference = target_x - current_x
+        difference = target_coordinate - current_coordinate
         if abs(difference) > 1:  # if player is too far
             sign = 1 if difference > 0 else -1
             # move towards the player not faster than CAMERA_SPEED
-            return current_x + sign * min(abs(difference), CAMERA_SPEED)
+            return current_coordinate + sign * min(
+                abs(difference), CAMERA_SPEED
+            )
         # otherwise just teleport
-        return target_x
+        return target_coordinate
 
     def move(self, motion_vector: Vector2D = (0, 0)):
         # if player is bound, camera can follow it, if axis are not locked
         if self._player:
             if not self._lock_x:
-                target_x = self._player.rect.centerx - self.viewport_size[0] // 2
+                target_x = (
+                    self._player.rect.centerx - self._viewport_size[0] // 2
+                )
                 self.x = self.move_to_target(target_x, self.x)
             if not self._lock_y:
-                target_y = self._player.rect.centery - self.viewport_size[1] // 2
+                target_y = (
+                    self._player.rect.centery - self._viewport_size[1] // 2
+                )
                 self.y = self.move_to_target(target_y, self.y)
 
             return

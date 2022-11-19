@@ -18,7 +18,7 @@ def exit_game():
 def main():
     # turn on debug mode for the sake of development
     logging.basicConfig(level=logging.DEBUG)
-    # public property that is utilized by Player and Camera classes
+    # getter of player's input that is utilized by Player and Camera classes
     move_controls = KeyboardControls()
     # prepare joystick input if available
     try:

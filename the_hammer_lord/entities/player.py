@@ -1,8 +1,7 @@
 from math import floor
 
-import pygame.key
 from pygame import time, image, transform, Surface
-from pygame.sprite import Group, Sprite
+from pygame.sprite import Group, Sprite, spritecollide
 
 from the_hammer_lord.entities.base import Entity
 from the_hammer_lord.level.collision_surface import CollisionSurface
@@ -21,7 +20,7 @@ class Player(Entity):
     _update_time: int = time.get_ticks()
     _vx: float = 0
     _vy: float = 0
-    _is_on_land: bool = False
+    _is_on_the_ground: bool = False
 
     def __init__(self, position: Point = (0, 0)):
         super().__init__(
@@ -37,8 +36,8 @@ class Player(Entity):
         self._health_bar = HealthBar(PLAYER_HEALTH)
 
     @property
-    def is_on_land(self):
-        return self._is_on_land
+    def is_on_the_ground(self):
+        return self._is_on_the_ground
 
     def _load_animations(self):
         self._animations = {}
@@ -95,15 +94,16 @@ class Player(Entity):
         self.rect.x += self._vx
         sprites = []
         for collidables in collidablesStorage.objects:
-            if isinstance(collidables, CollisionSurface):
-                sprites.extend(collidables.get_sprites())
-            elif isinstance(collidables, Group):
-                sprites.extend(collidables)
-            elif isinstance(collidables, Sprite):
-                sprites.append(collidables)
-            else:
-                raise NotImplementedError
-        collided_surfaces_by_x = pygame.sprite.spritecollide(self, sprites, False)
+            match collidables:
+                case CollisionSurface():
+                    sprites.extend(collidables.get_sprites())
+                case Group():
+                    sprites.extend(collidables)
+                case Sprite():
+                    sprites.append(collidables)
+                case _:
+                    raise NotImplementedError
+        collided_surfaces_by_x = spritecollide(self, sprites, False)
         for collided_surface in collided_surfaces_by_x:
             if self._vx > 0:
                 self.rect.right = collided_surface.rect.left
@@ -112,23 +112,23 @@ class Player(Entity):
                 self.rect.left = collided_surface.rect.right
                 self._vx = 0
 
-        if not self._is_on_land:
+        if not self._is_on_the_ground:
             # you can't jump if you're in the air
             ctrls_vector[1] = 0
             self._vy += GRAVITY_FORCE
         self._vy += ctrls_vector[1]
         self._vy += MAGIC_COLLISION_SHIFT  # avoid weird shaking
         self.rect.y += self._vy
-        collided_surfaces_by_y = pygame.sprite.spritecollide(
-            self, collidablesStorage.objects[0].get_sprites(), False
+        collided_surfaces_by_y = spritecollide(
+            self, sprites, False
         )
 
-        self._is_on_land = False
+        self._is_on_the_ground = False
         for collided_surface in collided_surfaces_by_y:
             if self._vy > 0:
                 self.rect.bottom = collided_surface.rect.top
                 self._vy = 0
-                self._is_on_land = True
+                self._is_on_the_ground = True
             else:
                 self.rect.top = collided_surface.rect.bottom
                 self._vy = 0
