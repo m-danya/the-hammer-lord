@@ -1,3 +1,4 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
@@ -8,36 +9,13 @@ from pygame.sprite import Sprite
 from the_hammer_lord.types import Point, Size2D
 
 
-# TODO: get rid of this class and instead
-#   add @property mappings to sprite.rect props in StaticEntity
-@dataclass
-class BaseEntity:
-    # entity's top left coords
-    # relative to the LEVEL coordinate system
-    x: int
-    y: int
-    width: int
-    height: int
-
-    @property
-    def position(self) -> Point:
-        return self.x, self.y
-
-
-class StaticEntity(ABC, BaseEntity, Sprite):
-    def __init__(self, dimensions: Size2D, pos: Point = (0, 0)):
-        super().__init__(x=pos[0], y=pos[1], width=dimensions[0], height=dimensions[1])
+class Entity(ABC, Sprite):
+    def __init__(self, dimensions: Size2D, position: Point = (0, 0)):
+        super().__init__()
         # assign associated rectangle
-        self.rect = Rect((self.x, self.y), (self.width, self.height))
+        self.rect = Rect((position[0], position[1]), (dimensions[0], dimensions[1]))
         self.image = None
 
     @abstractmethod
     def render(self, display: Surface, pos: Point):
-        pass
-
-
-# TODO: maybe move method should be added as well...
-class DynamicEntity(StaticEntity):
-    @abstractmethod
-    def update(self, *args: Any, **kwargs: Any):
         pass

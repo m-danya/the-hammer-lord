@@ -14,5 +14,5 @@ class IControls(ABC):
         return self._motion_vector
 
     @abstractmethod
-    def handle_movement(self, *args, **kwargs):
+    def get_input(self, *args, **kwargs):
         pass
