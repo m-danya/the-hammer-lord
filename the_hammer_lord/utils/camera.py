@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import typing as tp
-from math import floor
 
 from the_hammer_lord.types import Vector2D, Point, Size2D
 from the_hammer_lord.settings import CAMERA_SPEED, SCREEN_SIZE
