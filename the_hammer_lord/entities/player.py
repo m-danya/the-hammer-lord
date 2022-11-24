@@ -100,25 +100,15 @@ class Player(Entity):
         # TODO: move collision logic to Entity OR to CollidablesStorage
         self._vx = ctrls_vector[0]
         self.rect.x += self._vx
-        sprites = []
-        for collidables in collidablesStorage.objects:
-            match collidables:
-                case BorderSurface():
-                    sprites.extend(collidables.get_sprites())
-                case Group():
-                    sprites.extend(collidables)
-                case Sprite():
-                    sprites.append(collidables)
-                case _:
-                    raise NotImplementedError
-        collided_surfaces_by_x = spritecollide(self, sprites, False)
-        for collided_surface in collided_surfaces_by_x:
+        collided_by_x = collidablesStorage.get_collided_sprites_with(self)
+        for collided_sprite in collided_by_x:
             if self._vx > 0:
-                self.rect.right = collided_surface.rect.left
+                self.rect.right = collided_sprite.rect.left
                 self._vx = 0
             elif self._vx < 0:
-                self.rect.left = collided_surface.rect.right
+                self.rect.left = collided_sprite.rect.right
                 self._vx = 0
+            break  # avoid looping with self._vx changed to 0
 
         if not self._is_on_the_ground:
             # you can't jump if you're in the air
@@ -127,14 +117,15 @@ class Player(Entity):
         self._vy += ctrls_vector[1]
         self._vy += MAGIC_COLLISION_SHIFT  # avoid weird shaking
         self.rect.y += self._vy
-        collided_surfaces_by_y = spritecollide(self, sprites, False)
+        collided_by_y = collidablesStorage.get_collided_sprites_with(self)
 
         self._is_on_the_ground = False
-        for collided_surface in collided_surfaces_by_y:
+        for collided_sprite in collided_by_y:
             if self._vy > 0:
-                self.rect.bottom = collided_surface.rect.top
+                self.rect.bottom = collided_sprite.rect.top
                 self._vy = 0
                 self._is_on_the_ground = True
             else:
-                self.rect.top = collided_surface.rect.bottom
+                self.rect.top = collided_sprite.rect.bottom
                 self._vy = 0
+            break  # avoid looping with self._vy changed to 0

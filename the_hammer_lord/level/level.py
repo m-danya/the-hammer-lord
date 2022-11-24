@@ -1,5 +1,7 @@
 from pygame import Surface, image, transform
+from pygame.sprite import Group
 
+from the_hammer_lord.level.platform import Platform
 from the_hammer_lord.types import Size2D, Point, Vector2D
 from the_hammer_lord.level.border_surface import (
     BorderSurface,
@@ -20,7 +22,9 @@ class Level:
     _left_border: BorderSurface
     _right_border: BorderSurface
     _camera: Camera
-    _collidablesStorage: CollidablesStorage
+    _collidable_lvl_parts: CollidablesStorage
+    _collidable_creatures: CollidablesStorage
+    _platforms: list[Platform]
     _player: Player
     _level_bg: Surface
     _debug_info_corner: DebugInfoCorner
@@ -28,7 +32,8 @@ class Level:
     def __init__(self, level_size: Size2D = (3840, 1200)):
         self._size = level_size
         self._camera = Camera(1200, 88)
-        self._collidablesStorage = CollidablesStorage()
+        self._collidable_lvl_parts = CollidablesStorage()
+        self._collidable_creatures = CollidablesStorage()
         self._debug_info_corner = DebugInfoCorner(self)
 
     # generates the structure of the level, different params could be passed in the future
@@ -40,9 +45,8 @@ class Level:
             self._size,
             forming_points_list=[
                 (0, 700),
-                (420, 800),
-                (800, 700),
-                (1000, 600),
+                (200, 1100),
+                (1000, 700),
                 (1200, 700),
                 (1400, 800),
                 (1700, 900),
@@ -78,13 +82,47 @@ class Level:
                 (self._size[0] - 100, 0),
             ],
         )
-        self._collidablesStorage.extend(
+        self._platforms = [
+            Platform(
+                200,
+                50,
+                (
+                    "sleep",
+                    (130, 600),
+                    # move to target or wait
+                    (400, 600),
+                    "sleep",
+                    # (700, 500),
+                    # "sleep",
+                    # (130, 500),
+                    # "sleep",
+                ),
+            ),
+            Platform(
+                300,
+                1000,
+                (
+                    (700, 700),
+                    # move to target or wait
+                    "sleep",
+                    # (700, 500),
+                    (700, 1100),
+                    # "sleep",
+                    # (130, 500),
+                    # "sleep",
+                    "sleep",
+                ),
+            ),
+        ]
+        self._collidable_lvl_parts.extend(
             [self._floor, self._ceiling, self._left_border, self._right_border]
         )
+        self._collidable_lvl_parts.extend(self._platforms)
 
     # creates new player on the level (could be used in reset)
     def spawn_player(self, pos: Point = (900, 400)):
         self._player = Player(pos)
+        self._collidable_creatures.extend([self._player])
 
     def setup(self, *args, **kwargs):
         self.generate()
@@ -108,7 +146,10 @@ class Level:
                 (self._player.rect.x, self._player.rect.y)
             ),
         )
-        self._player.move(motion_vector, self._collidablesStorage)
+        for platform in self._platforms:
+            platform.render(display, self._camera)
+            platform.move(self._collidable_creatures)
+        self._player.move(motion_vector, self._collidable_lvl_parts)
         self._camera.detect_locked_axes(self._size)
         self._camera.move()
         self._debug_info_corner.update(display)

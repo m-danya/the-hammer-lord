@@ -30,8 +30,9 @@ class DebugInfoCorner:
             "player.x": self.level._player.rect.x,
             "player.y": self.level._player.rect.y,
             "player._is_on_the_ground": self.level._player._is_on_the_ground,
-            "mouse.x": pygame.mouse.get_pos()[0],
-            "mouse.y": pygame.mouse.get_pos()[1],
+            "mouse.x": pygame.mouse.get_pos()[0] + self.level._camera.x,
+            "mouse.y": pygame.mouse.get_pos()[1] + self.level._camera.y,
             "lock_x": self.level._camera._lock_x,
             "lock_y": self.level._camera._lock_y,
+            "platform_state_idx": self.level._platforms[0]._state_idx,
         }

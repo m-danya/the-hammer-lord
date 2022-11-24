@@ -5,6 +5,7 @@ from math import floor
 
 from the_hammer_lord.types import Vector2D, Point, Size2D
 from the_hammer_lord.settings import CAMERA_SPEED, SCREEN_SIZE
+from the_hammer_lord.utils.moving import move_to_target_1d
 
 # prevent cycle imports
 if tp.TYPE_CHECKING:
@@ -52,21 +53,6 @@ class Camera:
         self._lock_x = not x_fits
         self._lock_y = not y_fits
 
-    @staticmethod
-    def move_to_target(target_coordinate: int, current_coordinate: int):
-        # slowly move closer to the player (e.g. when he jumped on something)
-        difference = target_coordinate - current_coordinate
-        if abs(difference) > 1:  # if player is too far
-            sign = 1 if difference > 0 else -1
-            # move towards the player not faster than CAMERA_SPEED
-
-            speed = int(abs(difference) * CAMERA_SPEED)
-            min_speed = min(1, abs(difference))
-
-            return current_coordinate + sign * max(speed, min_speed)
-        # otherwise just teleport
-        return target_coordinate
-
     def move(self, motion_vector: Vector2D = (0, 0)):
         # if player is bound, camera can follow it, if axis are not locked
         if self._player:
@@ -74,12 +60,16 @@ class Camera:
                 self.target_x = (
                     self._player.rect.centerx - self._viewport_size[0] // 2
                 )
-            self.x = self.move_to_target(self.target_x, self.x)
+            self.x = move_to_target_1d(
+                self.target_x, self.x, CAMERA_SPEED, camera_mode=True
+            )
             if not self._lock_y:
                 self.target_y = (
                     self._player.rect.centery - self._viewport_size[1] // 2
                 )
-            self.y = self.move_to_target(self.target_y, self.y)
+            self.y = move_to_target_1d(
+                self.target_y, self.y, CAMERA_SPEED, camera_mode=True
+            )
         else:
             # otherwise it moves independently of player
             # e.g. for cutscenes

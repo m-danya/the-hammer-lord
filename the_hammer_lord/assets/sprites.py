@@ -16,4 +16,5 @@ SPRITES = {
         f"{Path(__file__).parent}/images/backgrounds/level_background1.jpg"
     ),
     "BrickTile": f"{Path(__file__).parent}/images/tiles/brick_tile.jpg",
+    "BrickTile2": f"{Path(__file__).parent}/images/tiles/brick_tile_2.png",
 }

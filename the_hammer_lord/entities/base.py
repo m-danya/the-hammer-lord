@@ -13,7 +13,7 @@ class Entity(ABC, Sprite):
     def __init__(self, dimensions: Size2D, position: Point = (0, 0)):
         super().__init__()
         # assign associated rectangle
-        self.rect = Rect((position[0], position[1]), (dimensions[0], dimensions[1]))
+        self.rect = Rect(position, dimensions)
         self.image = None
 
     @abstractmethod
