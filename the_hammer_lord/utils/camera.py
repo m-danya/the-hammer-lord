@@ -37,7 +37,7 @@ class Camera:
         x_fits, y_fits = (
             (
                 self._player.rect.centerx - self._viewport_size[0] // 2 > 0
-                and self._player.rect.centerx + self._viewport_size[0]
+                and self._player.rect.centerx + self._viewport_size[0] // 2
                 < lvl_size[0]
             ),
             (

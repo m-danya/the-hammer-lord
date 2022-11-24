@@ -4,7 +4,7 @@ from pygame import time, image, transform, Surface
 from pygame.sprite import Group, Sprite, spritecollide
 
 from the_hammer_lord.entities.base import Entity
-from the_hammer_lord.level.collision_surface import CollisionSurface
+from the_hammer_lord.level.border_surface import BorderSurface
 from the_hammer_lord.types import Vector2D, PlayerAction, Point
 from the_hammer_lord.settings import *
 from the_hammer_lord.assets.sprites import PLAYER_ANIMATIONS
@@ -43,7 +43,9 @@ class Player(Entity):
         self._animations = {}
         for action in PlayerAction:
             # 1. load sprite containing animation frames
-            sprite = image.load(PLAYER_ANIMATIONS[action].sprite_path).convert_alpha()
+            sprite = image.load(
+                PLAYER_ANIMATIONS[action].sprite_path
+            ).convert_alpha()
 
             # TODO: move to logic to a separate util function
             #  since we will be using it in other classes as well
@@ -68,10 +70,14 @@ class Player(Entity):
         # check if enough time has passed since the last update
         if time.get_ticks() - self._update_time > PLAYER_ANIMATION_COOLDOWN:
             self._current_frame += 1
-            self._current_frame %= PLAYER_ANIMATIONS[self._current_action].frames_cnt
+            self._current_frame %= PLAYER_ANIMATIONS[
+                self._current_action
+            ].frames_cnt
             self._update_time = time.get_ticks()
             # update player's animation frame
-            self.image = self._animations[self._current_action][self._current_frame]
+            self.image = self._animations[self._current_action][
+                self._current_frame
+            ]
 
     def update(self, display: Surface, render_pos: Point):
         self.render(display, render_pos)
@@ -88,14 +94,16 @@ class Player(Entity):
             (pos[0] + 45, pos[1] - 15),
         )
 
-    def move(self, ctrls_vector: Vector2D, collidablesStorage: CollidablesStorage):
+    def move(
+        self, ctrls_vector: Vector2D, collidablesStorage: CollidablesStorage
+    ):
         # TODO: move collision logic to Entity OR to CollidablesStorage
         self._vx = ctrls_vector[0]
         self.rect.x += self._vx
         sprites = []
         for collidables in collidablesStorage.objects:
             match collidables:
-                case CollisionSurface():
+                case BorderSurface():
                     sprites.extend(collidables.get_sprites())
                 case Group():
                     sprites.extend(collidables)
@@ -119,9 +127,7 @@ class Player(Entity):
         self._vy += ctrls_vector[1]
         self._vy += MAGIC_COLLISION_SHIFT  # avoid weird shaking
         self.rect.y += self._vy
-        collided_surfaces_by_y = spritecollide(
-            self, sprites, False
-        )
+        collided_surfaces_by_y = spritecollide(self, sprites, False)
 
         self._is_on_the_ground = False
         for collided_surface in collided_surfaces_by_y:
