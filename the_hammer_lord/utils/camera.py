@@ -24,6 +24,8 @@ class Camera:
         self.y = y
         self._lock_x = False
         self._lock_y = False
+        self.target_x = self.x
+        self.target_y = self.y
 
     @property
     def viewport_size(self) -> Size2D:
@@ -47,7 +49,7 @@ class Camera:
             ),
         )
         # y-axis is locked when player is jumping
-        y_fits = y_fits and self._player.is_on_the_ground
+        #y_fits = y_fits and self._player.is_on_the_ground
         self._lock_x = not x_fits
         self._lock_y = not y_fits
 
@@ -58,8 +60,12 @@ class Camera:
         if abs(difference) > 1:  # if player is too far
             sign = 1 if difference > 0 else -1
             # move towards the player not faster than CAMERA_SPEED
-            return current_coordinate + sign * min(
-                abs(difference), CAMERA_SPEED
+
+            speed = abs(difference) // 10
+            min_speed = min(1, abs(difference))
+
+            return current_coordinate + sign * max(
+                speed, min_speed
             )
         # otherwise just teleport
         return target_coordinate
@@ -68,15 +74,15 @@ class Camera:
         # if player is bound, camera can follow it, if axis are not locked
         if self._player:
             if not self._lock_x:
-                target_x = (
+                self.target_x = (
                     self._player.rect.centerx - self._viewport_size[0] // 2
                 )
-                self.x = self.move_to_target(target_x, self.x)
+            self.x = self.move_to_target(self.target_x, self.x)
             if not self._lock_y:
-                target_y = (
+                self.target_y = (
                     self._player.rect.centery - self._viewport_size[1] // 2
                 )
-                self.y = self.move_to_target(target_y, self.y)
+            self.y = self.move_to_target(self.target_y, self.y)
 
             return
 
